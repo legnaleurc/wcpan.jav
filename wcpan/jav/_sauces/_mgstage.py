@@ -43,7 +43,7 @@ class _MgstageProduct(Product):
     @property
     @override
     def sauce(self) -> str:
-        return "mgs"
+        return "mgstage"
 
     @property
     @override
