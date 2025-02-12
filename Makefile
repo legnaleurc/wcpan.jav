@@ -26,7 +26,7 @@ purge: clean
 	$(RM) -rf $(ENV_DIR)
 
 test:
-	$(PYTHON) -m compileall wcpan
+	$(PYTHON) -m compileall src/wcpan
 
 build: clean venv
 	uv build
