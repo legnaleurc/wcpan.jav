@@ -1,7 +1,7 @@
 [project]
 name = "wcpan-jav"
 version = "0.1.0"
-description = "internal use only"
+description = "INTERNAL USE ONLY"
 readme = "README.md"
 authors = [
     { name = "Wei-Cheng Pan", email = "legnaleurc@gmail.com" }
