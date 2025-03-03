@@ -40,7 +40,7 @@ class _VideoId:
 
     @property
     def query(self) -> str:
-        return quote(f"{self.series} {self.number}")
+        return quote(f"{self.series}-{self.number}")
 
     def __str__(self) -> str:
         return f"{self.series}-{self.number}"
