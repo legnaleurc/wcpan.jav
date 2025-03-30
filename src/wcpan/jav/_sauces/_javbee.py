@@ -52,7 +52,7 @@ class _JavbeeDetailedProduct(DetailedProduct):
 
 async def _fetch(video_id: str) -> DetailedProduct | None:
     soup = await get_html(
-        "https://javbee.me/search",
+        "https://javbee.vip/search",
         queries={
             "keyword": video_id,
         },
