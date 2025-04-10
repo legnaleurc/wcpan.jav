@@ -1,5 +1,5 @@
 RM := rm -rf
-PYTHON := uv run --frozen
+PYTHON := uv run
 RUFF := uvx ruff
 
 PKG_FILES := pyproject.toml
@@ -37,7 +37,7 @@ publish: build
 venv: $(ENV_LOCK)
 
 $(ENV_LOCK): $(PKG_LOCK)
-	uv sync --frozen
+	uv sync
 	touch $@
 
 $(PKG_LOCK): $(PKG_FILES)
