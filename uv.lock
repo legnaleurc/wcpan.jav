@@ -1,6 +1,6 @@
 version = 1
 revision = 1
-requires-python = ">=3.12"
+requires-python = ">=3.12, <4.0"
 
 [[package]]
 name = "aiohappyeyeballs"
@@ -249,8 +249,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiohttp", specifier = ">=3.11.11" },
-    { name = "beautifulsoup4", specifier = ">=4.13.3" },
+    { name = "aiohttp", specifier = ">=3.11.11,<4.0" },
+    { name = "beautifulsoup4", specifier = ">=4.13.3,<5.0" },
 ]
 
 [[package]]
