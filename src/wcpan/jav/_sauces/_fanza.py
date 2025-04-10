@@ -92,15 +92,17 @@ class _FanzaDetailedProduct(DetailedProduct):
 
 async def _fetch(video_id: _VideoId) -> Product | None:
     soup = await get_html(
-        f"https://www.dmm.co.jp/search/=/searchstr={video_id.query}/",
-        cookies={
-            "age_check_done": "1",
+        "https://www.dmm.co.jp/age_check/=/declared=yes/",
+        queries={
+            "rurl": f"https://www.dmm.co.jp/search/=/searchstr={video_id.query}/",
         },
     )
     if not soup:
         return None
 
-    anchor_list = soup.select(".txt > a")
+    anchor_list = soup.select(
+        "div.border-r > div:nth-child(1) > div:nth-child(2) > a:nth-child(3)"
+    )
     if not anchor_list:
         return None
 
