@@ -1,6 +1,6 @@
 RM := rm -rf
 PYTHON := uv run
-RUFF := uvx ruff
+RUFF := $(PYTHON) ruff
 
 PKG_FILES := pyproject.toml hatch.toml
 PKG_LOCK := uv.lock
@@ -11,11 +11,11 @@ ENV_LOCK := $(ENV_DIR)/pyvenv.cfg
 
 all: venv
 
-format:
+format: venv
 	$(RUFF) check --fix
 	$(RUFF) format
 
-lint:
+lint: venv
 	$(RUFF) check
 	$(RUFF) format --check
 
