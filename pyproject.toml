@@ -1,6 +1,6 @@
 [project]
 name = "wcpan-jav"
-version = "0.2.4"
+version = "0.2.5"
 description = "INTERNAL USE ONLY"
 readme = "README.md"
 authors = [
