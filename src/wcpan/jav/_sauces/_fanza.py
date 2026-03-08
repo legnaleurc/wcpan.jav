@@ -10,6 +10,7 @@ from bs4 import Tag
 from wcpan.jav.types import DetailedProduct, Product
 
 from ._lib import get_html, normalize_name
+from ._types import SimpleDetailedProduct
 
 
 _L = getLogger(__name__)
@@ -56,12 +57,11 @@ class _Variant:
     url: str
 
 
-class _FanzaDetailedProduct(DetailedProduct):
-    def __init__(self, *, video_id: _VideoId, title: str, url: str) -> None:
+class _FanzaProduct(Product):
+    def __init__(self, *, video_id: _VideoId, url: str) -> None:
         super().__init__()
 
         self._vid = video_id
-        self._title = title
         self._url = url
 
     @property
@@ -79,15 +79,9 @@ class _FanzaDetailedProduct(DetailedProduct):
     def url(self) -> str:
         return self._url
 
-    @property
     @override
-    def title(self) -> str:
-        return self._title
-
-    @property
-    @override
-    def actresses(self) -> list[str]:
-        return []
+    async def __call__(self) -> DetailedProduct | None:
+        return await _fetch_detail(self)
 
 
 async def _fetch(video_id: _VideoId) -> Product | None:
@@ -113,8 +107,29 @@ async def _fetch(video_id: _VideoId) -> Product | None:
         return None
 
     best = ordered_list[0]
-    title = normalize_name(best.title)
-    return _FanzaDetailedProduct(video_id=video_id, title=title, url=best.url)
+    return _FanzaProduct(video_id=video_id, url=best.url)
+
+
+async def _fetch_detail(product: Product) -> DetailedProduct | None:
+    soup = await get_html(
+        "https://www.dmm.co.jp/age_check/=/declared=yes/",
+        queries={
+            "rurl": product.url,
+        },
+    )
+    if not soup:
+        return None
+
+    title_el = soup.select_one("#title")
+    if not title_el:
+        return None
+    title = title_el.get_text().strip()
+    title = normalize_name(title)
+
+    performer_el = soup.select("#performer > a")
+    actresses = [normalize_name(el.get_text().strip()) for el in performer_el]
+
+    return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
 
 
 def _get_variant(anchor: Tag, video_id: _VideoId) -> _Variant | None:
