@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from typing import override
 from urllib.parse import urljoin
 
@@ -84,7 +85,11 @@ async def _fetch_detail(product: Product) -> DetailedProduct | None:
     if not actresses:
         return None
 
-    return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
+    released_at = _get_released_at(soup)
+
+    return SimpleDetailedProduct(
+        product=product, title=title, actresses=actresses, released_at=released_at
+    )
 
 
 def _get_title(soup: BeautifulSoup) -> str:
@@ -102,3 +107,11 @@ def _get_actresses(soup: BeautifulSoup) -> list[str]:
     actor = actor.get_text()
     actor = normalize_name(actor)
     return [actor]
+
+
+def _get_released_at(soup: BeautifulSoup) -> date | None:
+    publish_date = soup.select_one(".info > dd:nth-child(10)")
+    if not publish_date:
+        return None
+    publish_date = publish_date.get_text().strip().replace("/", "-")
+    return date.fromisoformat(publish_date)

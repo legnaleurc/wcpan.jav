@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from typing import override
 
 from wcpan.jav.types import DetailedProduct, Product
@@ -48,6 +49,11 @@ class _JavbeeDetailedProduct(DetailedProduct):
     @override
     def actresses(self) -> list[str]:
         return []
+
+    @property
+    @override
+    def released_at(self) -> date | None:
+        return None
 
 
 async def _fetch(video_id: str) -> DetailedProduct | None:

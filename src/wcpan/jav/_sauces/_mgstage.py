@@ -1,7 +1,9 @@
 import re
+from datetime import date
 from typing import override
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
+from bs4.element import NavigableString, PageElement
 
 from wcpan.jav.types import DetailedProduct, Product
 
@@ -59,10 +61,10 @@ class _MgstageProduct(Product):
 
     @override
     async def __call__(self) -> DetailedProduct | None:
-        return await _fetch(self, self._vid)
+        return await _fetch(self)
 
 
-async def _fetch(product: Product, video_id: _VideoId) -> DetailedProduct | None:
+async def _fetch(product: Product) -> DetailedProduct | None:
     soup = await get_html(
         product.url,
         cookies={
@@ -76,9 +78,15 @@ async def _fetch(product: Product, video_id: _VideoId) -> DetailedProduct | None
     if not title:
         return None
 
-    actresses = _get_actresses(soup)
+    table = _build_table(soup)
 
-    return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
+    actresses = _get_actresses(table)
+
+    released_at = _get_released_at(table)
+
+    return SimpleDetailedProduct(
+        product=product, title=title, actresses=actresses, released_at=released_at
+    )
 
 
 def _get_title(soup: BeautifulSoup) -> str:
@@ -89,11 +97,38 @@ def _get_title(soup: BeautifulSoup) -> str:
     return normalize_name(title.get_text())
 
 
-def _get_actresses(soup: BeautifulSoup) -> list[str]:
-    actresses = soup.select_one(
-        ".detail_left > table > tr:nth-child(1) > td:nth-child(2)"
-    )
-    if not actresses:
+def _get_actresses(table: dict[str, Tag | PageElement | NavigableString]) -> list[str]:
+    actresses = table.get("出演：")
+    if actresses is None:
         return []
-    actresses = actresses.get_text()
-    return [normalize_name(actresses)]
+
+    if not isinstance(actresses, Tag):
+        return []
+
+    anchors = actresses.select("a")
+    if anchors:
+        return [normalize_name(_.get_text()) for _ in anchors]
+
+    return [normalize_name(actresses.get_text())]
+
+
+def _get_released_at(
+    table: dict[str, Tag | PageElement | NavigableString],
+) -> date | None:
+    publish_date = table.get("配信開始日：")
+    if publish_date is None:
+        return None
+
+    publish_date = publish_date.get_text().strip().replace("/", "-")
+    return date.fromisoformat(publish_date)
+
+
+def _build_table(soup: BeautifulSoup) -> dict[str, Tag | PageElement | NavigableString]:
+    table: dict[str, Tag | PageElement | NavigableString] = {}
+    for row in soup.select(".detail_left table tr"):
+        label = row.find("th", recursive=False)
+        value = row.find("td", recursive=False)
+        if label is None or value is None:
+            continue
+        table[normalize_name(label.get_text())] = value
+    return table

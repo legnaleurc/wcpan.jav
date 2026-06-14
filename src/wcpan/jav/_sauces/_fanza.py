@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from datetime import date
 from logging import getLogger
 from pathlib import PurePath
 from typing import override
@@ -126,7 +127,16 @@ async def _fetch_detail(product: Product) -> DetailedProduct | None:
 
     actresses = _get_actresses(soup)
 
-    return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
+    released_at = None
+    released_el = soup.select_one("table.mg-b20 > tr:nth-child(1) > td:nth-child(2)")
+    if released_el:
+        released_at = released_el.get_text().strip()
+        released_at = released_at.replace("/", "-")
+        released_at = date.fromisoformat(released_at)
+
+    return SimpleDetailedProduct(
+        product=product, title=title, actresses=actresses, released_at=released_at
+    )
 
 
 def _get_title(soup: BeautifulSoup) -> str:

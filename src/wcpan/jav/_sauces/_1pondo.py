@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from typing import override
 
 from wcpan.jav.types import DetailedProduct, Product
@@ -52,5 +53,11 @@ async def _fetch(product: Product, query: str) -> DetailedProduct | None:
 
     title = normalize_name(data["Title"])
     actor = normalize_name(data["Actor"])
+    release = normalize_name(data["Release"])
 
-    return SimpleDetailedProduct(product=product, title=title, actresses=[actor])
+    return SimpleDetailedProduct(
+        product=product,
+        title=title,
+        actresses=[actor],
+        released_at=date.fromisoformat(release),
+    )

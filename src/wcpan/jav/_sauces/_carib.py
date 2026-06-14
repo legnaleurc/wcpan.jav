@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from typing import override
 
 from bs4 import BeautifulSoup
@@ -56,7 +57,12 @@ async def _fetch(product: Product) -> DetailedProduct | None:
         return None
 
     actresses = _get_actresses(soup)
-    return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
+
+    released_at = _get_released_at(soup)
+
+    return SimpleDetailedProduct(
+        product=product, title=title, actresses=actresses, released_at=released_at
+    )
 
 
 def _get_title(soup: BeautifulSoup) -> str:
@@ -74,3 +80,12 @@ def _get_actresses(soup: BeautifulSoup) -> list[str]:
 
     actor_name = normalize_name(actor.get_text())
     return [actor_name]
+
+
+def _get_released_at(soup: BeautifulSoup) -> date | None:
+    upload_date = soup.select_one(".spec-content[itemprop=datePublished]")
+    if not upload_date:
+        return None
+
+    released_at = upload_date.get_text().strip().replace("/", "-")
+    return date.fromisoformat(released_at)

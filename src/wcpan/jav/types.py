@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from datetime import date
 from typing import Self, final, override
 
 
@@ -35,3 +36,7 @@ class DetailedProduct(Product):
     @property
     @abstractmethod
     def actresses(self) -> list[str]: ...
+
+    @property
+    @abstractmethod
+    def released_at(self) -> date | None: ...

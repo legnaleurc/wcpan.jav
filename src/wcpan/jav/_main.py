@@ -50,6 +50,7 @@ async def _show_detailed_products(id: str) -> None:
         print(f"  url: {product.url}")
         print(f"  title: {product.title}")
         print(f"  actresses: {product.actresses}")
+        print(f"  released_at: {product.released_at}")
 
 
 def run_as_module() -> NoReturn:

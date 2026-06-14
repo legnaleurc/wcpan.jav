@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime
 from typing import override
 
 from wcpan.jav.types import DetailedProduct, Product
@@ -61,4 +62,12 @@ async def _fetch(product: Product) -> DetailedProduct | None:
 
     actresses = [normalize_name(video["actor"]) if "actor" in video else ""]
 
-    return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
+    released_at = (
+        datetime.fromisoformat(video["uploadDate"]).date()
+        if "uploadDate" in video
+        else None
+    )
+
+    return SimpleDetailedProduct(
+        product=product, title=title, actresses=actresses, released_at=released_at
+    )

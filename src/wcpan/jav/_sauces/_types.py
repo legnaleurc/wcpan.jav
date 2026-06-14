@@ -1,15 +1,24 @@
+from datetime import date
 from typing import override
 
 from wcpan.jav.types import DetailedProduct, Product
 
 
 class SimpleDetailedProduct(DetailedProduct):
-    def __init__(self, *, product: Product, title: str, actresses: list[str]) -> None:
+    def __init__(
+        self,
+        *,
+        product: Product,
+        title: str,
+        actresses: list[str],
+        released_at: date | None = None,
+    ) -> None:
         super().__init__()
 
         self._product = product
         self._title = title
         self._actresses = actresses
+        self._released_at = released_at
 
     @property
     @override
@@ -35,3 +44,8 @@ class SimpleDetailedProduct(DetailedProduct):
     @override
     def actresses(self) -> list[str]:
         return self._actresses
+
+    @property
+    @override
+    def released_at(self) -> date | None:
+        return self._released_at
