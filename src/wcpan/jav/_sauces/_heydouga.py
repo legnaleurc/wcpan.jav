@@ -53,8 +53,8 @@ async def _fetch(product: Product) -> DetailedProduct | None:
     if not title:
         return None
 
-    for span in title.find_all("span"):
-        span.decompose()
+    for badge in title.select("span,div"):
+        badge.decompose()
 
     title = title.get_text()
     title = normalize_name(title)
