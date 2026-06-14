@@ -5,7 +5,7 @@ from pathlib import PurePath
 from typing import override
 from urllib.parse import quote, urlsplit, urlunsplit
 
-from bs4 import Tag
+from bs4 import BeautifulSoup, Tag
 
 from wcpan.jav.types import DetailedProduct, Product
 
@@ -120,16 +120,27 @@ async def _fetch_detail(product: Product) -> DetailedProduct | None:
     if not soup:
         return None
 
-    title_el = soup.select_one("#title")
-    if not title_el:
+    title = _get_title(soup)
+    if not title:
         return None
-    title = title_el.get_text().strip()
-    title = normalize_name(title)
 
-    performer_el = soup.select("#performer > a")
-    actresses = [normalize_name(el.get_text().strip()) for el in performer_el]
+    actresses = _get_actresses(soup)
 
     return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
+
+
+def _get_title(soup: BeautifulSoup) -> str:
+    title_el = soup.select_one("#title")
+    if not title_el:
+        return ""
+
+    title = title_el.get_text()
+    return normalize_name(title)
+
+
+def _get_actresses(soup: BeautifulSoup) -> list[str]:
+    performer_el = soup.select("#performer > a")
+    return [normalize_name(el.get_text()) for el in performer_el]
 
 
 def _get_variant(anchor: Tag, video_id: _VideoId) -> _Variant | None:

@@ -1,9 +1,12 @@
 import re
 from typing import override
 
+from bs4 import BeautifulSoup
+
 from wcpan.jav.types import DetailedProduct, Product
 
 from ._lib import get_html, normalize_name
+from ._types import SimpleDetailedProduct
 
 
 async def fetch(unknown_text: str) -> Product | None:
@@ -41,52 +44,26 @@ class _Fc2Product(Product):
         return await _fetch(self)
 
 
-class _Fc2DetailedProduct(DetailedProduct):
-    def __init__(self, *, product: Product, title: str) -> None:
-        super().__init__()
-
-        self._p = product
-        self._title = title
-
-    @property
-    @override
-    def sauce(self) -> str:
-        return self._p.sauce
-
-    @property
-    @override
-    def id(self) -> str:
-        return self._p.id
-
-    @property
-    @override
-    def url(self) -> str:
-        return self._p.url
-
-    @property
-    @override
-    def title(self) -> str:
-        return self._title
-
-    @property
-    @override
-    def actresses(self) -> list[str]:
-        return []
-
-
 async def _fetch(product: Product) -> DetailedProduct | None:
     soup = await get_html(product.url)
     if not soup:
         return None
 
+    name = _get_title(soup)
+    if not name:
+        return None
+
+    return SimpleDetailedProduct(product=product, title=name, actresses=[])
+
+
+def _get_title(soup: BeautifulSoup) -> str:
     title = soup.select_one('head > meta[name="twitter:title"]')
     if not title:
-        return None
+        return ""
     meta = title.attrs.get("content")
     if not meta:
-        return None
+        return ""
     if not isinstance(meta, str):
-        return None
-    name = normalize_name(meta)
+        return ""
 
-    return _Fc2DetailedProduct(product=product, title=name)
+    return normalize_name(meta)

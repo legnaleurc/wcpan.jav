@@ -1,6 +1,8 @@
 import re
 from typing import override
 
+from bs4 import BeautifulSoup
+
 from wcpan.jav.types import DetailedProduct, Product
 
 from ._lib import get_html, normalize_name
@@ -49,13 +51,20 @@ async def _fetch(product: Product) -> DetailedProduct | None:
     if not soup:
         return None
 
-    title = soup.select_one("#title-bg > h1")
+    title = _get_title(soup)
     if not title:
         return None
+
+    return SimpleDetailedProduct(product=product, title=title, actresses=[])
+
+
+def _get_title(soup: BeautifulSoup) -> str:
+    title = soup.select_one("#title-bg > h1")
+    if not title:
+        return ""
 
     for badge in title.select("span,div"):
         badge.decompose()
 
     title = title.get_text()
-    title = normalize_name(title)
-    return SimpleDetailedProduct(product=product, title=title, actresses=[])
+    return normalize_name(title)

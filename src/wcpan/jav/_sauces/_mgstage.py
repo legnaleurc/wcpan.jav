@@ -1,6 +1,8 @@
 import re
 from typing import override
 
+from bs4 import BeautifulSoup
+
 from wcpan.jav.types import DetailedProduct, Product
 
 from ._lib import get_html, normalize_name
@@ -70,10 +72,16 @@ async def _fetch(product: Product, video_id: _VideoId) -> DetailedProduct | None
     if not soup:
         return None
 
-    title = soup.select_one(".tag")
+    title = _get_title(soup)
     if not title:
         return None
 
-    title = normalize_name(title.get_text())
-
     return SimpleDetailedProduct(product=product, title=title, actresses=[])
+
+
+def _get_title(soup: BeautifulSoup) -> str:
+    title = soup.select_one(".tag")
+    if not title:
+        return ""
+
+    return normalize_name(title.get_text())
