@@ -1,7 +1,6 @@
+import json
 import re
 from typing import override
-
-from bs4 import BeautifulSoup
 
 from wcpan.jav.types import DetailedProduct, Product
 
@@ -48,17 +47,18 @@ async def _fetch(product: Product) -> DetailedProduct | None:
     if not soup:
         return None
 
-    title = _get_title(soup)
-    if not title:
+    json_ld = soup.select_one('script[type="application/ld+json"]')
+    if not json_ld:
         return None
 
-    return SimpleDetailedProduct(product=product, title=title, actresses=[])
+    json_ld = json.loads(json_ld.get_text())
+    video = json_ld.get("video", {})
 
-
-def _get_title(soup: BeautifulSoup) -> str:
-    title = soup.select_one("#movie > h1")
+    title = video.get("name", "")
     if not title:
-        return ""
+        return None
+    title = normalize_name(title)
 
-    title = normalize_name(title.get_text())
-    return re.sub(r"\t+", " ", title)
+    actresses = [normalize_name(video["actor"]) if "actor" in video else ""]
+
+    return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
