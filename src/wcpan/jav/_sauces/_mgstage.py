@@ -76,7 +76,9 @@ async def _fetch(product: Product, video_id: _VideoId) -> DetailedProduct | None
     if not title:
         return None
 
-    return SimpleDetailedProduct(product=product, title=title, actresses=[])
+    actresses = _get_actresses(soup)
+
+    return SimpleDetailedProduct(product=product, title=title, actresses=actresses)
 
 
 def _get_title(soup: BeautifulSoup) -> str:
@@ -85,3 +87,13 @@ def _get_title(soup: BeautifulSoup) -> str:
         return ""
 
     return normalize_name(title.get_text())
+
+
+def _get_actresses(soup: BeautifulSoup) -> list[str]:
+    actresses = soup.select_one(
+        ".detail_left > table > tr:nth-child(1) > td:nth-child(2)"
+    )
+    if not actresses:
+        return []
+    actresses = actresses.get_text()
+    return [normalize_name(actresses)]
